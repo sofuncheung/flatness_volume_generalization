@@ -22,7 +22,7 @@ The main code does three things:
 2. calculate sharpness
 3. calculate volume
 
-if everything runs correctly, you will get a `record_1.npy`, which contains a numpy array
+If everything runs correctly, you will get a `record_1.npy`, which contains a numpy array
     [generalization accuracy, (log) sharpness, (log) volume].
     You can then use whatever tool you like to plot them.
 
