@@ -1,4 +1,4 @@
-# Example code
+# Example code for paper *WHY FLATNESS CORRELATES WITH GENERALIZATION FOR DEEPNEURAL NETWORKS*
 
 The initial state of this example code can reproduce Fig. 3(c) and Fig. 3(f) in the paper.
 For other plots we need to change the neural network architecture/dataset/optimizer manually. 
