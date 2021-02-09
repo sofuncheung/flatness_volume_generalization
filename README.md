@@ -32,7 +32,7 @@ In order to get functions with various generalization performance, we can manual
 
 Here is an example of bash script that submit multiple jobs:
 
-`
+```
 for i in `seq 0 50 500`
 do
     echo "Attack size: $i"
@@ -43,13 +43,13 @@ do
     dir=$(pwd)
     echo "$dir"
 
-    for s in \`seq 1 1 5\`
+    for s in `seq 1 1 5`
     do
         echo "submitting sample $s"
         python main.py -p $dir -s $s
     done
     cd ..
 done
-`
+```
 **Note:** if you open new directories to run the main code (e.g. create directories like `attack_size_0` and contain `config.py` in these individual directories) then you need to **remove** the `config.py` in the *same directory* as `main.py`, or the code will take that very one as the configs.
 
