@@ -29,3 +29,6 @@ If everything runs correctly, you will get a `record_1.npy`, which contains a nu
 ### Change the `attack_set_size`
 
 In order to get functions with various generalization performance, we can manually tune the `attack_set_size` in `config.py`. The larger `attack_set_size` is (compared to the uncorrupted training set), the worse the generalization. 
+
+Here is an example of bash script that submit multiple jobs:
+
