@@ -73,7 +73,7 @@ class Sharpness(object):
                     targets = targets.type_as(outputs)
                 loss = self.loss(outputs, targets)
                 L_w += loss.item()
-            L_w = L_w/(batch_idx+1)
+            L_w = L_w/len(dataset)
         #print('L_w: ', L_w)
         w = copy.deepcopy(net.state_dict())
         w = self.del_key_from_dic(w, 'num_batches_tracked')
@@ -110,7 +110,7 @@ class Sharpness(object):
                         new_outputs.squeeze_(-1)
                         targets = targets.type_as(new_outputs)
                     epoch_loss += self.loss(new_outputs, targets).item()
-                epoch_loss = epoch_loss / (batch_idx+1)
+                epoch_loss = epoch_loss / len(dataset)
                 max_value = max(max_value, epoch_loss)
                 max_value_list.append(max_value)
             np.save(os.path.join(

@@ -58,3 +58,5 @@ done
 - architecture: `sed -i 's/net = resnet.ResNet50(num_classes=1)/net = fcn.FCN()/g' main.py`
 - dataset: Use the `-d` argument `python main.py -p $dir -d 'MNIST'`
 - optimizer: Can be set as the `optim` item in `config.py`
+
+You might want to change the sharpness hyperparameters as well. Please refer to Table.1 in the Appendix.

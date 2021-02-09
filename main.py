@@ -115,7 +115,7 @@ if args.resume:
     start_epoch = checkpoint['epoch']
 
 if config.binary_dataset == True:
-    criterion = nn.BCEWithLogitsLoss() # sigmoid cross entropy
+    criterion = nn.BCEWithLogitsLoss(reduction='sum') # sigmoid cross entropy
 else:
     criterion = nn.CrossEntropyLoss()
 if config.optim == 'SGD+Momentum':
@@ -165,7 +165,7 @@ if args.save_checkpoint_on_train_acc:
             if (batch_idx+1) % 50 == 0:
                 print('Training On Batch %03d' % (batch_idx+1))
 
-        epoch_loss = train_loss/(batch_idx+1)
+        epoch_loss = train_loss/ (len(trainset_genuine)+config.attack_set_size)
         epoch_acc, correct, total = dataset_accuracy(net, trainset_genuine,
                 device, config.binary_dataset)  #acc=correct/total. acc measured on train_genuine 
         print('(Tainted) Loss: %.3f | Acc: %.3f%% (%d/%d)' % (
@@ -215,7 +215,7 @@ if args.save_checkpoint_on_train_acc:
 
                 if (batch_idx+1) % 20 == 0:
                     print('Testing On Batch %03d' % (batch_idx+1))
-        epoch_loss = test_loss/(batch_idx+1)
+        epoch_loss = test_loss/(len(trainset_genuine)+config.attack_set_size)
         epoch_acc = correct/total
         print('Loss: %.3f | Acc: %.3f%% (%d/%d)' % (epoch_loss, 100.*epoch_acc, correct, total))
 
@@ -238,22 +238,10 @@ else:
             loss.backward()
             optimizer.step()
             train_loss += loss.item()
-            '''
-            if config.binary_dataset:
-                predicted = outputs > 0
-            else:
-                _, predicted = outputs.max(1)
-            total += targets.size(0)
-            correct += predicted.eq(targets).sum().item()
-            '''
-            #progress_bar(
-            #    batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
-            #    % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
-            # Above is when using terminal. Now I would like to run it on computing cores.
             if (batch_idx+1) % 50 == 0:
                 print('Training On Batch %03d' % (batch_idx+1))
 
-        epoch_loss = train_loss/(batch_idx+1)
+        epoch_loss = train_loss/(len(trainset_genuine)+config.attack_set_size)
         epoch_acc, correct, total = dataset_accuracy(net, trainset_genuine,
                 device, config.binary_dataset)  #acc=correct/total. acc measured on train_genuine 
         print('(Tainted) Loss: %.3f | Acc: %.3f%% (%d/%d)' % (
@@ -286,7 +274,7 @@ else:
 
                 if (batch_idx+1) % 20 == 0:
                     print('Testing On Batch %03d' % (batch_idx+1))
-        epoch_loss = test_loss/(batch_idx+1)
+        epoch_loss = test_loss/(len(trainset_genuine)+config.attack_set_size)
         epoch_acc = correct/total
         print('Loss: %.3f | Acc: %.3f%% (%d/%d)' % (epoch_loss, 100.*epoch_acc, correct, total))
 
