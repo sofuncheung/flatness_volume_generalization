@@ -30,5 +30,31 @@ If everything runs correctly, you will get a `record_1.npy`, which contains a nu
 
 In order to get functions with various generalization performance, we can manually tune the `attack_set_size` in `config.py`. The larger `attack_set_size` is (compared to the uncorrupted training set), the worse the generalization. 
 
-Here is an example of bash script that submit multiple jobs:
+Here is an example of bash script that submits multiple jobs:
 
+```
+for i in `seq 0 50 500`
+do
+    echo "Attack size: $i"
+    mkdir attack_size_$i
+    cp config.py attack_size_$i/
+    cd attack_size_$i/
+    echo "    attack_set_size = $i" >> config.py
+    dir=$(pwd)
+    echo "$dir"
+
+    for s in `seq 1 1 5`
+    do
+        echo "submitting sample $s"
+        python main.py -p $dir -s $s
+    done
+    cd ..
+done
+```
+**Note:** if you open new directories to run the main code (e.g. create directories like `attack_size_0` and contain `config.py` in these individual directories) then you need to **remove** the `config.py` in the *same directory* as `main.py`, or the code will take that very one as the configs.
+
+### Choose other architecture/dataset/optimizer
+
+- architecture: `sed -i 's/net = resnet.ResNet50(num_classes=1)/net = fcn.FCN()/g' main.py`
+- dataset: Use the `-d` argument `python main.py -p $dir -d 'MNIST'`
+- optimizer: Can be set as the `optim` item in `config.py`
