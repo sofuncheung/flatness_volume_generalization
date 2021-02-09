@@ -43,7 +43,7 @@ do
     dir=$(pwd)
     echo "$dir"
 
-    for s in `seq 1 1 5`
+    for s in \`seq 1 1 5\`
     do
         echo "submitting sample $s"
         python main.py -p $dir -s $s
