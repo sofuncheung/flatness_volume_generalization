@@ -188,10 +188,10 @@ class BinaryMNIST(Dataset):
     DATAPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 
     def __init__(self, data_type='train_genuine', train_size=500):
-        x_train_20000 = np.load(os.path.join(DATAPATH, 'train_x_20000.npy'))
-        y_train_20000 = self.turn_onehot_onto_binary(np.load(os.path.join(DATAPATH, 'train_y_20000.npy')))
-        x_test = np.load(os.path.join(DATAPATH, 'test_x_1000.npy'))
-        y_test =  self.turn_onehot_onto_binary(np.load(os.path.join(DATAPATH, 'test_y_1000.npy')))
+        x_train_20000 = np.load(os.path.join(self.DATAPATH, 'train_x_20000.npy'))
+        y_train_20000 = self.turn_onehot_onto_binary(np.load(os.path.join(self.DATAPATH, 'train_y_20000.npy')))
+        x_test = np.load(os.path.join(self.DATAPATH, 'test_x_1000.npy'))
+        y_test =  self.turn_onehot_onto_binary(np.load(os.path.join(self.DATAPATH, 'test_y_1000.npy')))
         if data_type == 'train_genuine':
             self.data = x_train_20000[:train_size]
             self.targets = y_train_20000[:train_size]

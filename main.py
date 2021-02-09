@@ -15,10 +15,11 @@ import argparse
 
 import utils
 from utils import *
-from model import resnet, keskar_models
+from model import resnet, keskar_models, fcn
 from sharpness import Sharpness
 from GP_prob.GP_prob_gpy import GP_prob
 from empirical_kernel import empirical_K
+from fc_kernel_he_normal import kernel_matrix
 
 
 parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
@@ -35,6 +36,8 @@ parser.add_argument('--empirical_kernel_only', '-k', action='store_true',
                     help='if set, calculate empirical_K only')
 parser.add_argument('--save_checkpoint_on_train_acc', action='store_true',
         help='Save checkpoint based on training accuracy instead of testing')
+parser.add_argument('--dataset', '-d', default='CIFAR10',
+        type=str, help='dataset (CIFAR10 or MNIST)')
 
 args = parser.parse_args()
 
@@ -55,7 +58,7 @@ trainloader,testset,testloader,trainset_genuine = utils.load_data(
         config.train_batch_size,
         config.test_batch_size,
         config.num_workers,
-        dataset='CIFAR10',
+        dataset=args.dataset,
         attack_set_size=config.attack_set_size,
         binary=config.binary_dataset)
 
@@ -66,7 +69,8 @@ trainloader,testset,testloader,trainset_genuine = utils.load_data(
 print('==> Building model..')
 # net = VGG('VGG19')
 if config.binary_dataset:
-    net = resnet.ResNet50(num_classes=1)
+    #net = resnet.ResNet50(num_classes=1)
+    net = fcn.FCN()
     #net = keskar_models.C1(num_classes=1)
 else:
     net = resnet.ResNet50()
@@ -92,7 +96,9 @@ net = net.to(device)
 if device == 'cuda':
     net = torch.nn.DataParallel(net)
     cudnn.benchmark = True
-# summary(net, (3, 32, 32))
+
+#summary(net, (3, 32, 32))
+#summary(net, (28*28,))
 # rescale(net, 'layer1', 1, 2)
 # sys.exit()
 if args.resume:
@@ -428,28 +434,33 @@ if __name__ == '__main__':
 
         if config.volume_one_off == True:
             data_train_plus_test = torch.utils.data.ConcatDataset((trainset_genuine, testset))
-            if os.path.isfile(os.path.join(
-                args.path, 'empirical_K.npy')
-                    ):
-                print('Using Existing Kernel:')
-                K = np.load(os.path.join(
-                    args.path, 'empirical_K.npy'))
-            else:
-                model = resnet.ResNet_pop_fc_50(num_classes=1)
-                print('Calculating Empirical Kernel:')
-                K = empirical_K(model, data_train_plus_test,
-                        #1,device,
-                        0.1*len(data_train_plus_test), device, # Use fc-poped model
-                        sigmaw=np.sqrt(2), sigmab=1.0, n_gpus=1,
-                        empirical_kernel_batch_size=256,
-                        truncated_init_dist=False,
-                        store_partial_kernel=False,
-                        partial_kernel_n_proc=1,
-                        partial_kernel_index=0)
-                K = np.array(K.cpu())
-                np.save(os.path.join(
-                    args.path, 'empirical_K.npy'), K)
             (xs, _) = get_xs_ys_from_dataset(data_train_plus_test, 256, config.num_workers)
+            if args.dataset == 'CIFAR10':
+                if os.path.isfile(os.path.join(
+                    args.path, 'empirical_K.npy')
+                        ):
+                    print('Using Existing Kernel:')
+                    K = np.load(os.path.join(
+                        args.path, 'empirical_K.npy'))
+                else:
+                    model = resnet.ResNet_pop_fc_50(num_classes=1)
+                    print('Calculating Empirical Kernel:')
+                    K = empirical_K(model, data_train_plus_test,
+                            #1,device,
+                            0.1*len(data_train_plus_test), device, # Use fc-poped model
+                            sigmaw=np.sqrt(2), sigmab=1.0, n_gpus=1,
+                            empirical_kernel_batch_size=256,
+                            truncated_init_dist=False,
+                            store_partial_kernel=False,
+                            partial_kernel_n_proc=1,
+                            partial_kernel_index=0)
+                    K = np.array(K.cpu())
+                    np.save(os.path.join(
+                        args.path, 'empirical_K.npy'), K)
+
+            elif args.dataset == 'MNIST':
+                K = kernel_matrix(xs,number_layers=2,
+                        sigmaw=np.sqrt(2),sigmab=np.array([1.,1,1]))
             ys = (model_predict(
                     net, data_train_plus_test, 256, config.num_workers, device
                     ) > 0)
@@ -459,6 +470,7 @@ if __name__ == '__main__':
             # Also a funny bug: if K is a tensor on GPU and xs,ys are np.array on cpu,
             # there would be problem as well!
             log_10PU = logPU * np.log10(np.e)
+
 
         if config.record == True:
             generalization = test_loss_acc_list[-1][1] # last test accuracy
