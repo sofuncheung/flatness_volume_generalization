@@ -10,7 +10,7 @@ import numpy as np
 import copy
 import scipy.optimize as optimize
 
-from utils import ScipyOptimizeWrapper
+from utils import ScipyOptimizeWrapper, get_loss
 
 
 class Sharpness(object):
@@ -41,6 +41,7 @@ class Sharpness(object):
         self.binary_dataset = binary_dataset
         self.output_file_pth = output_file_pth
         self.sample = sample
+        self.dataset = dataset
 
     def clip_params(self, eps, params, new_params):
         for i in new_params:
@@ -63,18 +64,8 @@ class Sharpness(object):
     def sharpness(self, clip_eps=1e-4, max_iter_epochs=100, opt_mtd='SGD'):
         net = self.net
         net.eval()
-        L_w = 0
-        with torch.no_grad():
-            for batch_idx, (inputs, targets) in enumerate(self.testloader):
-                inputs, targets = inputs.to(self.device), targets.to(self.device)
-                outputs = net(inputs)
-                if self.binary_dataset:
-                    outputs.squeeze_(-1)
-                    targets = targets.type_as(outputs)
-                loss = self.loss(outputs, targets)
-                L_w += loss.item()
-            L_w = L_w/len(dataset)
-        #print('L_w: ', L_w)
+        L_w = get_loss(net, self.dataset, self.device, self.loss, self.binary_dataset)
+        print('L_w: ', L_w)
         w = copy.deepcopy(net.state_dict())
         w = self.del_key_from_dic(w, 'num_batches_tracked')
         self.stop_tracking(w)
