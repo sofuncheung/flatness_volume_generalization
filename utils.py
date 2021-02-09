@@ -418,6 +418,33 @@ def dataset_accuracy(net, dataset, device, binary_dataset=True):
     acc = correct/total
     return acc, correct, total
 
+def get_loss(net, dataset, device, loss, binary_dataset=True):
+    net = net.to(device)
+    net.eval()
+    loader = torch.utils.data.DataLoader(
+            dataset,
+            batch_size=256,
+            shuffle=False,
+            num_workers=4,
+            )
+    L = 0
+    with torch.no_grad():
+        for batch_idx, (inputs, targets) in enumerate(loader):
+            inputs, targets = inputs.to(device), targets.to(device)
+            outputs = net(inputs)
+            if binary_dataset:
+                outputs.squeeze_(-1)
+                targets = targets.type_as(outputs)
+            L += loss(outputs, targets).item()
+        L = L / len(dataset)
+
+    return L
+
+
+
+
+
+
 def get_xs_ys_from_dataset(dataset, batch_size, num_workers):
     loader = torch.utils.data.DataLoader(
         dataset,
