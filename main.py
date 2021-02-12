@@ -98,7 +98,7 @@ if device == 'cuda':
     cudnn.benchmark = True
 
 #summary(net, (3, 32, 32))
-#summary(net, (28*28,))
+summary(net, (28*28,))
 # rescale(net, 'layer1', 1, 2)
 # sys.exit()
 if args.resume:
@@ -448,7 +448,7 @@ if __name__ == '__main__':
 
             elif args.dataset == 'MNIST':
                 K = kernel_matrix(xs,number_layers=2,
-                        sigmaw=np.sqrt(2),sigmab=np.array([1.,1,1]))
+                        sigmaw=np.sqrt(2),sigmab=np.array([1.,1,1]),n_gpus=0)
             ys = (model_predict(
                     net, data_train_plus_test, 256, config.num_workers, device
                     ) > 0)

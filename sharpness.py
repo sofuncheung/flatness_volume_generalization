@@ -101,7 +101,7 @@ class Sharpness(object):
                         new_outputs.squeeze_(-1)
                         targets = targets.type_as(new_outputs)
                     epoch_loss += self.loss(new_outputs, targets).item()
-                epoch_loss = epoch_loss / len(dataset)
+                epoch_loss = epoch_loss / len(self.dataset)
                 max_value = max(max_value, epoch_loss)
                 max_value_list.append(max_value)
             np.save(os.path.join(
